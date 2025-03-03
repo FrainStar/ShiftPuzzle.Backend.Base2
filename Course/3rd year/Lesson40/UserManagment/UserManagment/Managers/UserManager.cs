@@ -1,40 +1,43 @@
-﻿using UserManagment.Models;
+﻿using UserManagment.Interfaces;
+using UserManagment.Models;
 
-namespace UserManagment.Managers;
-
-public class UserManager
+namespace UserManagment.Managers
 {
-    private List<User> users = new List<User>();
-
-    public void AddUser(User user)
+    public class UserManager : IUserManager
     {
-        // Добавление пользователя
-        users.Add(user);
-        SendWelcomeEmail(user.Email);
-    }
+        private List<User> users = new List<User>();
 
-    public void DeleteUser(int userId)
-    {
-        // Удаление пользователя
-        var user = users.FirstOrDefault(u => u.Id == userId);
-        if (user != null) users.Remove(user);
-    }
+        public void AddUser(User user)
+        {
+            // Добавление пользователя
+            users.Add(user);
+        }
 
-    public User GetUser(int userId)
-    {
-        // Получение пользователя
-        return users.FirstOrDefault(u => u.Id == userId);
-    }
+        public void DeleteUser(Guid userId)
+        {
+            // Удаление пользователя
+            var user = users.FirstOrDefault(u => u.Id == userId);
+            if (user != null)
+            {
+                users.Remove(user);
+            }
+        }
 
-    public IEnumerable<User> GetAllUsers()
-    {
-        // Получение всех пользователей
-        return users;
-    }
+        public User? GetUser(Guid userId)
+        {
+            // Получение пользователя
+            return users.FirstOrDefault(u => u.Id == userId);
+        }
 
-    private void SendWelcomeEmail(string email)
-    {
-        // Логика отправки email
-        Console.WriteLine($"Sending welcome email to {email}");
-    }
+        public IEnumerable<User> GetAllUsers()
+        {
+            return users;
+        }
+
+        private void SendWelcomeEmail(string email)
+        {
+            // Логика отправки email
+            Console.WriteLine($"Sending welcome email to {email}");
+        }
+    }   
 }

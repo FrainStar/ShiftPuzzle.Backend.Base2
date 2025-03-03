@@ -3,47 +3,58 @@ using UserManagment.Managers;
 using UserManagment.Models;
 
 namespace UserManagment.Controllers;
+using UserManagment.Interfaces;
 
 [Route("api/[controller]")]
 [ApiController]
 public class UserController : ControllerBase
 {
-    private readonly UserManager userManager = new UserManager();
+    private readonly IUserManager _userManager;
+
+    public UserController(IUserManager userManager)
+    {
+        _userManager = userManager;
+    }
 
     [HttpPost("CreateUser")]
     public IActionResult CreateUser(string username, string email)
     {
         var user = new User { Username = username, Email = email };
-        userManager.AddUser(user);
-        return Content($"User {username} created.");
+        _userManager.AddUser(user);
+        return Ok($"User {username} created.");
     }
 
     [HttpDelete("RemoveUser")]
-    public IActionResult RemoveUser(int userId)
+    public IActionResult RemoveUser(Guid userId)
     {
-        userManager.DeleteUser(userId);
-        return Content($"User with ID {userId} removed.");
+        if (_userManager.GetUser(userId) != null)
+        {
+            _userManager.DeleteUser(userId);
+            return Ok($"User with ID {userId} removed.");
+        }
+        return NotFound($"User with ID {userId} not found.");
     }
 
     [HttpGet("ShowUser")]
-    public IActionResult ShowUser(int userId)
+    public IActionResult ShowUser(Guid userId)
     {
-        var user = userManager.GetUser(userId);
+        var user = _userManager.GetUser(userId);
         if (user != null)
         {
-            return Content($"User: {user.Username}, Email: {user.Email}");
+            return Ok($"User: {user.Username}, Email: {user.Email}");
         }
-        else
-        {
-            return Content("User not found.");
-        }
+
+        return NotFound("User not found.");
     }
 
     [HttpGet("ListUsers")]
     public IActionResult ListUsers()
     {
-        var users = userManager.GetAllUsers();
-        var userList = string.Join("<br/>", users.Select(u => $"User: {u.Username}, Email: {u.Email}"));
-        return Content(userList);
+        var users = _userManager.GetAllUsers();
+        foreach (var user in users)
+        {
+            Console.WriteLine($"{user.Id} {user.Username}, {user.Email}");
+        }
+        return Ok(users);
     }
 }
